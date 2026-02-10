@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VICRO | ANONYMOUS v9.9</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --green: #00ff41; --bg: #000; --card: #080808;
+            --border: #00ff41; --red: #ff0000; --blue: #00ccff;
+            --text: #00ff41; --dim: #004400;
+        }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; height: 100vh; overflow: hidden; }
+        #matrix-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.15; }
+
+        /* Login Minimalista */
+        #login-page { position: fixed; inset: 0; z-index: 2000; background: black; display: flex; justify-content: center; align-items: center; }
+        .login-card { text-align: center; width: 300px; border: 1px solid var(--green); padding: 40px; background: #000; }
+        .hacker-input { width: 100%; background: black; border: 1px solid var(--dim); padding: 12px; color: var(--green); outline: none; margin-bottom: 15px; font-family: 'Courier New', monospace; box-sizing: border-box; text-align: center; }
+        .btn-hack { width: 100%; background: var(--green); color: black; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+
+        /* App Layout */
+        #main-app { display: none; height: 100vh; flex-direction: column; padding: 20px; box-sizing: border-box; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--dim); }
+        .tab-btn { padding: 10px 20px; border: none; background: none; color: var(--green); cursor: pointer; font-size: 0.8rem; opacity: 0.4; }
+        .tab-btn.active { opacity: 1; border-bottom: 2px solid var(--green); font-weight: bold; }
+
+        /* SECCIONES DIVIDIDAS */
+        .content-section { display: none; height: calc(100vh - 200px); }
+        .content-section.active { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        .panel { background: var(--card); border: 1px solid var(--dim); padding: 25px; overflow-y: auto; }
+        .amount { font-size: 3.5rem; font-weight: bold; margin: 15px 0; }
+
+        /* REPRODUCTOR (SoundCloud estable) */
+        #music-container { position: fixed; bottom: 10px; right: 10px; width: 300px; height: 80px; border: 1px solid var(--dim); background: #000; }
+
+        .log-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #111; font-size: 0.75rem; }
+        .admin-hide { display: none !important; }
+        @media (max-width: 800px) { .content-section.active { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+
+    <div id="login-page">
+        <div class="login-card">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Anonymous_emblem.svg" style="width:80px; margin-bottom:20px; filter:invert(1)">
+            <h2 style="font-size: 1rem; letter-spacing: 3px;">ACCESO_VICRO</h2>
+            <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
+            <input type="password" id="pass" class="hacker-input" placeholder="PASSWORD">
+            <button class="btn-hack" onclick="login()">INFILTRARSE</button>
+        </div>
+    </div>
+
+    <div id="main-app">
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="switchTab(this, 'tab-gen')">01_GENERAL</button>
+            <button class="tab-btn" onclick="switchTab(this, 'tab-airtm')">02_AIRTM</button>
+            <button class="tab-btn" onclick="switchTab(this, 'tab-stats')">03_ESTADISTICAS</button>
+            <button class="tab-btn" onclick="switchTab(this, 'tab-sys')">04_SISTEMA</button>
+        </nav>
+
+        <div id="tab-gen" class="content-section active">
+            <div class="panel">
+                <small>[ BALANCE_GENERAL ]</small>
+                <div class="amount" id="val-gen" style="color: var(--green);">$0.00</div>
+                <div class="master-only">
+                    <button onclick="ajustarSaldo('general')" style="background:none; border:1px solid var(--green); color:var(--green); cursor:pointer; padding:8px; width:100%; margin-bottom:15px;">RECALIBRAR_VALOR_TOTAL</button>
+                    <input type="text" id="c-gen" class="hacker-input" placeholder="CONCEPTO" style="text-align:left">
+                    <input type="number" id="m-gen" class="hacker-input" placeholder="VALOR" style="text-align:left">
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-hack" style="flex:1" onclick="registrar('general', 'INGRESO')">SUMAR</button>
+                        <button class="btn-hack" style="flex:1; background:var(--red);" onclick="registrar('general', 'GASTO')">RESTAR</button>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <small>[ LOGS_DE_MOVIMIENTO ]</small>
+                <div id="list-gen"></div>
+            </div>
+        </div>
+
+        <div id="tab-airtm" class="content-section">
+            <div class="panel">
+                <small style="color:var(--blue);">[ NODO_AIRTM_USD ]</small>
+                <div class="amount" id="val-airtm" style="color:var(--blue);">$0.00</div>
+                <div class="master-only">
+                    <button onclick="ajustarSaldo('airtm')" style="background:none; border:1px solid var(--blue); color:var(--blue); cursor:pointer; padding:8px; width:100%; margin-bottom:15px;">AJUSTE_MANUAL</button>
+                    <input type="text" id="c-air" class="hacker-input" placeholder="DETALLE" style="text-align:left">
+                    <input type="number" id="m-air" class="hacker-input" placeholder="USD $" style="text-align:left">
+                    <button class="btn-hack" style="background:var(--blue); color:black;" onclick="registrar('airtm', 'INGRESO')">DEPÓSITO_NODO</button>
+                </div>
+            </div>
+            <div class="panel">
+                <small>[ LOGS_AIRTM ]</small>
+                <div id="list-air"></div>
+            </div>
+        </div>
+
+        <div id="tab-stats" class="content-section">
+            <div class="panel" style="grid-column: span 2; display: flex; justify-content: center; align-items: center;">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+
+        <div id="tab-sys" class="content-section">
+            <div class="panel" style="grid-column: span 2; text-align:center;">
+                <button class="btn-hack" onclick="exportar('general')" style="width:250px;">EXPORTAR_GENERAL</button><br><br>
+                <button class="btn-hack" onclick="exportar('airtm')" style="width:250px; background:var(--blue); color:black;">EXPORTAR_AIRTM</button>
+                <hr style="border:1px dashed var(--dim); margin:40px;">
+                <button class="btn-hack master-only" onclick="confirmarReset()" style="background:none; border:1px solid var(--red); color:var(--red); width:250px;">WIPE_TOTAL_MEMORY</button>
+            </div>
+        </div>
+
+        <div id="music-container">
+            <iframe width="100%" height="100%" scrolling="no" frameborder="no" allow="autoplay" 
+                src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1253412589&color=%2300ff41&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false">
+            </iframe>
+        </div>
+    </div>
+
+    <script>
+        // Matrix
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        let cw = canvas.width = window.innerWidth, ch = canvas.height = window.innerHeight;
+        const drops = Array(Math.floor(cw / 20)).fill(1);
+        function matrix() {
+            ctx.fillStyle = "rgba(0,0,0,0.1)"; ctx.fillRect(0,0,cw,ch);
+            ctx.fillStyle = "#0f0"; ctx.font = "15px monospace";
+            drops.forEach((y, i) => {
+                ctx.fillText(Math.floor(Math.random()*2), i*20, y*20);
+                if(y*20 > ch && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+        setInterval(matrix, 50);
+
+        // Data Core
+        const DB_KEY = 'vicro_stable_v99';
+        let currentRole = "";
+
+        function load() {
+            const raw = localStorage.getItem(DB_KEY);
+            const def = { general: { saldo: 180000, logs: [] }, airtm: { saldo: 0, logs: [] } };
+            if(!raw) return def;
+            try { return JSON.parse(atob(raw)); } catch(e) { return def; }
+        }
+        let db = load();
+
+        function login() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            if((u === "vicrocrook" && p === "soyelmaster") || (u === "admin" && p === "admin")) {
+                currentRole = (u === "vicrocrook") ? "master" : "visor";
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+                if(currentRole === "visor") document.querySelectorAll('.master-only').forEach(e => e.style.display = 'none');
+                updateUI();
+                initChart();
+            } else { alert("DENEGADO"); }
+        }
+
+        function switchTab(btn, id) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function save() {
+            localStorage.setItem(DB_KEY, btoa(JSON.stringify(db)));
+            updateUI();
+            if(myChart) {
+                myChart.data.datasets[0].data = [db.general.saldo, db.airtm.saldo];
+                myChart.update();
+            }
+        }
+
+        function registrar(sec, tipo) {
+            const cI = document.getElementById(sec === 'general' ? 'c-gen' : 'c-air');
+            const mI = document.getElementById(sec === 'general' ? 'm-gen' : 'm-air');
+            const c = cI.value; const m = parseFloat(mI.value);
+            if(!c || isNaN(m)) return;
+            tipo === 'INGRESO' ? db[sec].saldo += m : db[sec].saldo -= m;
+            db[sec].logs.push({ id: Date.now(), concepto: c, monto: m, tipo, fecha: new Date().toLocaleDateString() });
+            cI.value = ""; mI.value = "";
+            save();
+        }
+
+        function ajustarSaldo(sec) {
+            let n = prompt("NUEVO BALANCE TOTAL:", db[sec].saldo);
+            if(n !== null && !isNaN(n)) {
+                db[sec].saldo = parseFloat(n);
+                db[sec].logs.push({ id: Date.now(), concepto: "AJUSTE_TOTAL", monto: db[sec].saldo, tipo: "AJUSTE", fecha: "HOY" });
+                save();
+            }
+        }
+
+        function eliminarItem(sec, id) {
+            if(prompt("PASS_ELIMINAR:") === "2026") {
+                db[sec].logs = db[sec].logs.filter(l => l.id !== id);
+                save();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('val-gen').innerText = `$${db.general.saldo.toLocaleString()}`;
+            document.getElementById('val-airtm').innerText = `$${db.airtm.saldo.toLocaleString()}`;
+            fillLogs('list-gen', 'general');
+            fillLogs('list-air', 'airtm');
+        }
+
+        function fillLogs(id, sec) {
+            const container = document.getElementById(id); container.innerHTML = "";
+            [...db[sec].logs].reverse().forEach(l => {
+                container.innerHTML += `<div class="log-item">
+                    <div><b>${l.concepto}</b><br><small style="color:var(--dim)">${l.fecha}</small></div>
+                    <div style="display:flex; align-items:center; gap:10px">
+                        <span style="color:${l.tipo==='INGRESO'?'var(--green)':'var(--red)'}">${l.monto.toLocaleString()}</span>
+                        ${currentRole==='master' ? `<button onclick="eliminarItem('${sec}',${l.id})" style="background:none; border:none; color:var(--red); cursor:pointer;">×</button>` : ''}
+                    </div>
+                </div>`;
+            });
+        }
+
+        let myChart;
+        function initChart() {
+            const ctxC = document.getElementById('myChart');
+            myChart = new Chart(ctxC, {
+                type: 'doughnut',
+                data: {
+                    labels: ['GENERAL', 'AIRTM'],
+                    datasets: [{ data: [db.general.saldo, db.airtm.saldo], backgroundColor: ['#0f0', '#00ccff'], borderWeight: 0 }]
+                },
+                options: { plugins: { legend: { labels: { color: '#0f0' } } }, cutout: '75%' }
+            });
+        }
+
+        function exportar(sec) {
+            let csv = "Fecha,Concepto,Monto,Type\n";
+            db[sec].logs.forEach(l => { csv += `${l.fecha},${l.concepto},${l.monto},${l.tipo}\n`; });
+            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `Vicro_${sec}.csv`; a.click();
+        }
+
+        function confirmarReset() {
+            if(prompt("PURGA_PASS:") === "soyelmaster") {
+                db = { general: { saldo: 180000, logs: [] }, airtm: { saldo: 0, logs: [] } };
+                save();
+            }
+        }
+    </script>
+</body>
+</html>
