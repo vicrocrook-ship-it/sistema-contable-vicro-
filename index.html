@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VICRO | ANONYMOUS v9.9</title>
+    <title>VICRO | OPERACIONES v9.9</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -14,31 +14,36 @@
         body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; height: 100vh; overflow: hidden; }
         #matrix-canvas { position: fixed; inset: 0; z-index: -1; opacity: 0.15; }
 
-        /* Login Minimalista */
+        /* Login Anonymous */
         #login-page { position: fixed; inset: 0; z-index: 2000; background: black; display: flex; justify-content: center; align-items: center; }
-        .login-card { text-align: center; width: 300px; border: 1px solid var(--green); padding: 40px; background: #000; }
+        .login-card { text-align: center; width: 300px; border: 1px solid var(--green); padding: 40px; background: #000; box-shadow: 0 0 20px var(--dim); }
         .hacker-input { width: 100%; background: black; border: 1px solid var(--dim); padding: 12px; color: var(--green); outline: none; margin-bottom: 15px; font-family: 'Courier New', monospace; box-sizing: border-box; text-align: center; }
         .btn-hack { width: 100%; background: var(--green); color: black; border: none; padding: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
 
-        /* App Layout */
+        /* App Layout Full Screen */
         #main-app { display: none; height: 100vh; flex-direction: column; padding: 20px; box-sizing: border-box; }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--dim); }
         .tab-btn { padding: 10px 20px; border: none; background: none; color: var(--green); cursor: pointer; font-size: 0.8rem; opacity: 0.4; }
         .tab-btn.active { opacity: 1; border-bottom: 2px solid var(--green); font-weight: bold; }
 
-        /* SECCIONES DIVIDIDAS */
         .content-section { display: none; height: calc(100vh - 200px); }
         .content-section.active { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
         .panel { background: var(--card); border: 1px solid var(--dim); padding: 25px; overflow-y: auto; }
         .amount { font-size: 3.5rem; font-weight: bold; margin: 15px 0; }
 
-        /* REPRODUCTOR (SoundCloud estable) */
-        #music-container { position: fixed; bottom: 10px; right: 10px; width: 300px; height: 80px; border: 1px solid var(--dim); background: #000; }
+        /* REPRODUCTOR FLOTANTE */
+        #music-container { 
+            position: fixed; bottom: 15px; right: 15px; 
+            width: 300px; height: 80px; 
+            border: 1px solid var(--green); 
+            background: #000; box-shadow: 0 0 15px var(--dim);
+            z-index: 1000;
+        }
 
         .log-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #111; font-size: 0.75rem; }
         .admin-hide { display: none !important; }
-        @media (max-width: 800px) { .content-section.active { grid-template-columns: 1fr; } }
+        @media (max-width: 800px) { .content-section.active { grid-template-columns: 1fr; } #music-container { width: 100%; right: 0; bottom: 0; height: 60px; } }
     </style>
 </head>
 <body>
@@ -47,9 +52,9 @@
     <div id="login-page">
         <div class="login-card">
             <img src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Anonymous_emblem.svg" style="width:80px; margin-bottom:20px; filter:invert(1)">
-            <h2 style="font-size: 1rem; letter-spacing: 3px;">ACCESO_VICRO</h2>
+            <h2 style="font-size: 1rem; letter-spacing: 3px;">VICRO_SISTEMA</h2>
             <input type="text" id="user" class="hacker-input" placeholder="USUARIO">
-            <input type="password" id="pass" class="hacker-input" placeholder="PASSWORD">
+            <input type="password" id="pass" class="hacker-input" placeholder="CONTRASEÑA">
             <button class="btn-hack" onclick="login()">INFILTRARSE</button>
         </div>
     </div>
@@ -64,12 +69,12 @@
 
         <div id="tab-gen" class="content-section active">
             <div class="panel">
-                <small>[ BALANCE_GENERAL ]</small>
+                <small>[ CAPITAL_PRINCIPAL ]</small>
                 <div class="amount" id="val-gen" style="color: var(--green);">$0.00</div>
                 <div class="master-only">
-                    <button onclick="ajustarSaldo('general')" style="background:none; border:1px solid var(--green); color:var(--green); cursor:pointer; padding:8px; width:100%; margin-bottom:15px;">RECALIBRAR_VALOR_TOTAL</button>
+                    <button onclick="ajustarSaldo('general')" style="background:none; border:1px solid var(--green); color:var(--green); cursor:pointer; padding:8px; width:100%; margin-bottom:15px; font-family: 'Courier New';">RECALIBRAR_BALANCE</button>
                     <input type="text" id="c-gen" class="hacker-input" placeholder="CONCEPTO" style="text-align:left">
-                    <input type="number" id="m-gen" class="hacker-input" placeholder="VALOR" style="text-align:left">
+                    <input type="number" id="m-gen" class="hacker-input" placeholder="MONTO $" style="text-align:left">
                     <div style="display:flex; gap:10px;">
                         <button class="btn-hack" style="flex:1" onclick="registrar('general', 'INGRESO')">SUMAR</button>
                         <button class="btn-hack" style="flex:1; background:var(--red);" onclick="registrar('general', 'GASTO')">RESTAR</button>
@@ -77,7 +82,7 @@
                 </div>
             </div>
             <div class="panel">
-                <small>[ LOGS_DE_MOVIMIENTO ]</small>
+                <small>[ HISTORIAL_TRANSACCIONES ]</small>
                 <div id="list-gen"></div>
             </div>
         </div>
@@ -87,10 +92,10 @@
                 <small style="color:var(--blue);">[ NODO_AIRTM_USD ]</small>
                 <div class="amount" id="val-airtm" style="color:var(--blue);">$0.00</div>
                 <div class="master-only">
-                    <button onclick="ajustarSaldo('airtm')" style="background:none; border:1px solid var(--blue); color:var(--blue); cursor:pointer; padding:8px; width:100%; margin-bottom:15px;">AJUSTE_MANUAL</button>
+                    <button onclick="ajustarSaldo('airtm')" style="background:none; border:1px solid var(--blue); color:var(--blue); cursor:pointer; padding:8px; width:100%; margin-bottom:15px; font-family: 'Courier New';">AJUSTAR_AIRTM</button>
                     <input type="text" id="c-air" class="hacker-input" placeholder="DETALLE" style="text-align:left">
-                    <input type="number" id="m-air" class="hacker-input" placeholder="USD $" style="text-align:left">
-                    <button class="btn-hack" style="background:var(--blue); color:black;" onclick="registrar('airtm', 'INGRESO')">DEPÓSITO_NODO</button>
+                    <input type="number" id="m-air" class="hacker-input" placeholder="VALOR USD" style="text-align:left">
+                    <button class="btn-hack" style="background:var(--blue); color:black;" onclick="registrar('airtm', 'INGRESO')">CARGAR_NODO</button>
                 </div>
             </div>
             <div class="panel">
@@ -107,16 +112,16 @@
 
         <div id="tab-sys" class="content-section">
             <div class="panel" style="grid-column: span 2; text-align:center;">
-                <button class="btn-hack" onclick="exportar('general')" style="width:250px;">EXPORTAR_GENERAL</button><br><br>
-                <button class="btn-hack" onclick="exportar('airtm')" style="width:250px; background:var(--blue); color:black;">EXPORTAR_AIRTM</button>
+                <button class="btn-hack" onclick="exportar('general')" style="width:250px;">EXPORTAR_GENERAL_CSV</button><br><br>
+                <button class="btn-hack" onclick="exportar('airtm')" style="width:250px; background:var(--blue); color:black;">EXPORTAR_AIRTM_CSV</button>
                 <hr style="border:1px dashed var(--dim); margin:40px;">
-                <button class="btn-hack master-only" onclick="confirmarReset()" style="background:none; border:1px solid var(--red); color:var(--red); width:250px;">WIPE_TOTAL_MEMORY</button>
+                <button class="btn-hack master-only" onclick="confirmarReset()" style="background:none; border:1px solid var(--red); color:var(--red); width:250px;">PURGA_TOTAL_SISTEMA</button>
             </div>
         </div>
 
         <div id="music-container">
-            <iframe width="100%" height="100%" scrolling="no" frameborder="no" allow="autoplay" 
-                src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/1253412589&color=%2300ff41&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false">
+            <iframe width="100%" height="80" scrolling="no" frameborder="no" allow="autoplay" 
+                src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/1143834163&color=%2300ff41&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false">
             </iframe>
         </div>
     </div>
@@ -139,7 +144,7 @@
         setInterval(matrix, 50);
 
         // Data Core
-        const DB_KEY = 'vicro_stable_v99';
+        const DB_KEY = 'vicro_final_es_v99';
         let currentRole = "";
 
         function load() {
@@ -160,7 +165,7 @@
                 if(currentRole === "visor") document.querySelectorAll('.master-only').forEach(e => e.style.display = 'none');
                 updateUI();
                 initChart();
-            } else { alert("DENEGADO"); }
+            } else { alert("ACCESO_DENEGADO"); }
         }
 
         function switchTab(btn, id) {
@@ -191,16 +196,16 @@
         }
 
         function ajustarSaldo(sec) {
-            let n = prompt("NUEVO BALANCE TOTAL:", db[sec].saldo);
+            let n = prompt("SINTONIZAR NUEVO BALANCE TOTAL:", db[sec].saldo);
             if(n !== null && !isNaN(n)) {
                 db[sec].saldo = parseFloat(n);
-                db[sec].logs.push({ id: Date.now(), concepto: "AJUSTE_TOTAL", monto: db[sec].saldo, tipo: "AJUSTE", fecha: "HOY" });
+                db[sec].logs.push({ id: Date.now(), concepto: "RECALIBRACIÓN", monto: db[sec].saldo, tipo: "AJUSTE", fecha: "HOY" });
                 save();
             }
         }
 
         function eliminarItem(sec, id) {
-            if(prompt("PASS_ELIMINAR:") === "2026") {
+            if(prompt("CODIGO_SEGURIDAD:") === "2026") {
                 db[sec].logs = db[sec].logs.filter(l => l.id !== id);
                 save();
             }
@@ -240,15 +245,15 @@
         }
 
         function exportar(sec) {
-            let csv = "Fecha,Concepto,Monto,Type\n";
+            let csv = "Fecha,Concepto,Monto,Tipo\n";
             db[sec].logs.forEach(l => { csv += `${l.fecha},${l.concepto},${l.monto},${l.tipo}\n`; });
             const blob = new Blob(["\ufeff" + csv], { type: 'text/csv' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = `Vicro_${sec}.csv`; a.click();
+            a.download = `Vicro_Log_${sec}.csv`; a.click();
         }
 
         function confirmarReset() {
-            if(prompt("PURGA_PASS:") === "soyelmaster") {
+            if(prompt("PASS_PURGA:") === "soyelmaster") {
                 db = { general: { saldo: 180000, logs: [] }, airtm: { saldo: 0, logs: [] } };
                 save();
             }
